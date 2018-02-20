@@ -42,12 +42,13 @@ if searchPath.last! != "/" {
 }
 
 do {
-    let filenames = try fileManager.contentsOfDirectory(atPath: searchPath)
+    var filenames = try fileManager.contentsOfDirectory(atPath: searchPath)
+    filenames.sort(by: {$0.lowercased() < $1.lowercased()})
 
     for filename in filenames {
-        if filename == scriptName || filename == storeToFileName { continue }
+        if filename == scriptName || filename == storeToFileName || filename == ".DS_Store" { continue }
 
-        let filenamePlusNewLine = filename + "\n"
+        let filenamePlusNewLine = "\"\(filename)\"" + ",\n"
         try write(string: filenamePlusNewLine, to: storeToFileName)
     }
 
