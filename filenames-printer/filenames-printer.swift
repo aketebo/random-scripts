@@ -3,56 +3,77 @@
 import Foundation
 
 func write(string: String, to filePath: String) throws {
-    if let fileHandle = FileHandle(forWritingAtPath: filePath),
-        let data = string.data(using: .utf8) {
+    if let fileHandle = FileHandle(forWritingAtPath: filePath), let data = string.data(using: .utf8) {
         fileHandle.seekToEndOfFile()
         fileHandle.write(data)
     } else {
         do {
             try string.write(toFile: filePath, atomically: true, encoding: .utf8)
         } catch {
-            print("Something went wrong. Could not write to file")
+            print(error)
         }
     }
 }
 
-if CommandLine.arguments.count == 2 {
-    if "help" == CommandLine.arguments[1] {
-        print("Here's an example of how this script should be ran:")
-        print("./filenamesreader.swift <directory-to-find-filenames> <filename-to-store-filenames>")
-        exit(0)
-    }
+let goodCommands = """
+                   👍🏾 ./filenames-printer [DIRECTORY OF THE FILENAMES TO BE PRINTED]
+                       ⦿ this will print filenames to the screen
+
+                   👍🏾 ./filenames-printer [DIRECTORY OF THE FILENAMES TO BE PRINTED] [FILE TO PRINT FOUND FILENAMES]
+                       ⦿ this will print filenames to the file specified
+                   """
+let badCommands = "❌ ./filenames-printer"
+let moreArgumentsMessage = "⚠️ Script atleast 1 arguments"
+let lessArgumentsMessage = "⚠️ Script has 1 or more extra arguments"
+let commandLineArguments = CommandLine.arguments
+let scriptName = commandLineArguments.first ?? ""
+let arguments = commandLineArguments.dropFirst()
+
+// A few checks before we start
+guard arguments.count >= 1  else {
+    print("\(moreArgumentsMessage)\n\n\(badCommands)\n\n\(goodCommands)")
+    exit(1)
+}
+guard arguments.count <= 2 else {
+    print("\(lessArgumentsMessage)\n\n\(badCommands)\n\n\(goodCommands)")
+    exit(1)
 }
 
-guard CommandLine.arguments.count == 3 else {
-    print("Arguments not equal to 3")
-    print("Hmmm you're command arguments seem to be the problem")
-    print("Here's an example:")
-    print("./filenamesreader.swift <directory-to-find-filenames> <filename-to-store-filenames>")
-    exit(0)
-}
-
-let scriptName = "filenamesreader.swift"
-var searchPath = CommandLine.arguments[1]
-let storeToFileName = CommandLine.arguments[2]
 let fileManager = FileManager.default
+var searchingDirectory = arguments.first ?? ""
+let lastSearchingDirectorySymbol = String(searchingDirectory.last ?? Character(""))
 
-if searchPath.last! != "/" {
-    searchPath.append("/")
+// Make sure searching directory includes a forward slash
+if lastSearchingDirectorySymbol != "/" {
+    searchingDirectory.append("/")
 }
 
-do {
-    var filenames = try fileManager.contentsOfDirectory(atPath: searchPath)
-    filenames.sort(by: {$0.lowercased() < $1.lowercased()})
+var filenames = try fileManager.contentsOfDirectory(atPath: searchingDirectory)
 
-    for filename in filenames {
-        if filename == scriptName || filename == storeToFileName || filename == ".DS_Store" { continue }
+filenames.sort { $0.lowercased() < $1.lowercased() }
 
-        let filenamePlusNewLine = "\"\(filename)\"" + ",\n"
-        try write(string: filenamePlusNewLine, to: storeToFileName)
+if arguments.count == 1 {
+    filenames = filenames.filter { return $0 != scriptName && $0 != ".DS_Store" ? true : false }
+    filenames.forEach { print("\($0)") }
+} else {
+    let storageFilename = arguments.last ?? ""
+
+    filenames = filenames.filter { return $0 != scriptName && $0 != storageFilename && $0 != ".DS_Store" ? true : false }
+
+    // Remove storage file so its empty
+    do {
+        try fileManager.removeItem(atPath: storageFilename)
+    } catch {
+        print(error)
     }
 
-    print("All done!")
-} catch {
-    print("😔 I have failed you my friend...")
+    filenames.forEach {
+        do {
+            try write(string: "\($0)\n", to: storageFilename)
+        } catch {
+            print(error)
+        }
+    }
 }
+
+exit(0)
