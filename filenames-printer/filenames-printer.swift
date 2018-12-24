@@ -65,6 +65,7 @@ if arguments.count == 1 {
         try fileManager.removeItem(atPath: storageFilename)
     } catch {
         print(error)
+        exit(1)
     }
 
     filenames.forEach {
@@ -72,6 +73,7 @@ if arguments.count == 1 {
             try write(string: "\($0)\n", to: storageFilename)
         } catch {
             print(error)
+            exit(1)
         }
     }
 }
