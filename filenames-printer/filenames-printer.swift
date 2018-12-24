@@ -19,8 +19,8 @@ let goodCommands = """
                    👍🏾 ./filenames-printer [DIRECTORY OF THE FILENAMES TO BE PRINTED]
                        ⦿ this will print filenames to the screen
 
-                   👍🏾 ./filenames-printer [DIRECTORY OF THE FILENAMES TO BE PRINTED] [FILE TO PRINT FOUND FILENAMES]
-                       ⦿ this will print filenames to the file specified
+                   👍🏾 ./filenames-printer [DIRECTORY OF THE FILENAMES TO BE PRINTED] [FILE TO WRITE FOUND FILENAMES]
+                       ⦿ this will write filenames to the file specified
                    """
 let badCommands = "❌ ./filenames-printer"
 let moreArgumentsMessage = "⚠️ Script atleast 1 arguments"
